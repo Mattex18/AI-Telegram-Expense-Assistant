@@ -1,0 +1,904 @@
+{
+  "name": "Gestore Spesa",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "8bfeddb8-59cc-4813-9d39-1ac2bd7f2909",
+      "name": "Telegram Trigger",
+      "webhookId": "8d7ba9d1-c089-483b-acb8-5346e206ecc4",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "spese",
+          "mode": "list",
+          "cachedResultName": "spese"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "importo",
+              "value": "={{ $json.amount }}"
+            },
+            {
+              "column": "descrizione",
+              "value": "={{ $json.description }}"
+            },
+            {
+              "column": "data_spesa",
+              "value": "={{ $json.date }}"
+            },
+            {
+              "column": "categoria",
+              "value": "={{ $json.categoria }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        784,
+        -432
+      ],
+      "id": "29be8a80-909d-45fd-9498-034fcdda4c6b",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "mySql": {
+          "id": "k90uLl7BIXjETWKn",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT SUM(importo) AS totale\nFROM spese\nWHERE MONTH(data_spesa) = MONTH(NOW())\nAND YEAR(data_spesa) = YEAR(NOW());",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        992,
+        -432
+      ],
+      "id": "f0a3f9e4-f939-428b-b5b0-0bcfbd4a8fef",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "k90uLl7BIXjETWKn",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ Spesa registrata!\n\n💰 Importo: €{{ $('Code Estrai testo').item.json.amount }}\n\n📝 Descrizione: {{ $('Code Estrai testo').item.json.description }}\n\n🏷️ Categoria: {{ $('Merge').item.json.categoria }}\n\n📊 Totale mese:\n€{{$json[\"totale\"]}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        -432
+      ],
+      "id": "1f79be34-f53d-4ce0-8f0c-5b0d24899708",
+      "name": "Send a text message",
+      "webhookId": "8508f9e9-2d0a-46dc-a84c-5efe1035bb9a",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/spesa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "2340706c-ff56-4e82-ba35-36887689d263"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "05473058-f154-49e0-b7c7-59ff25206bc2",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/totale",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "85a55d7b-084b-4389-ab98-a88042308a29",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/ultime",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6faa9418-e20d-4a1d-8781-e4791491e4cf",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2d376b62-1ec9-4afc-bdd4-2d60a6ab7e72",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/categorie",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8a750cd1-9110-41f1-a6f1-85026dc0e863",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/categoria",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a5da747d-5d92-4aba-8806-6afc9b537571",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        0
+      ],
+      "id": "6e521b38-dfe0-4a5f-b0ab-685534f68b5e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $('Telegram Trigger').first().json.message.text;\n\nconst match = text.match(/^\\/spesa\\s+(\\d+(?:[.,]\\d+)?)\\s+(.+)$/i);\n\nif (!match) {\n\tthrow new Error(\n\t\t\"Formato non valido. Usa: /spesa importo descrizione\"\n\t);\n}\n\nconst amount = parseFloat(match[1].replace(',', '.'));\nconst description = match[2].trim();\n\nreturn [{\n\tjson: {\n\t\tamount,\n\t\tdescription,\n\t\tdate: new Date().toISOString().slice(0, 19).replace('T', ' ')\n\t}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -416
+      ],
+      "id": "952a1da0-d51f-4e16-8779-c9def045d6eb",
+      "name": "Code Estrai testo"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT importo, descrizione, data_spesa\nFROM spese\nORDER BY data_spesa DESC\nLIMIT {{ $json.numero }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "7019ba69-0491-4fa2-ba78-b168d602b639",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "mySql": {
+          "id": "k90uLl7BIXjETWKn",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  categoria,\n  COUNT(*) AS numero_spese,\n  SUM(importo) AS totale\nFROM spese\nGROUP BY categoria\nORDER BY totale DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        16,
+        240
+      ],
+      "id": "105f5362-e03e-492c-8fdf-6148ef20ab20",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "mySql": {
+          "id": "k90uLl7BIXjETWKn",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let testo = \"📊 Spese per categoria\\n\\n\";\n\nfor (const item of items) {\n  testo += `🏷️ ${item.json.categoria}\\n`;\n  testo += `💰 €${Number(item.json.totale).toFixed(2)}\\n`;\n  testo += `🧾 ${item.json.numero_spese} spese\\n\\n`;\n}\n\nreturn [{\n  json: {\n    testo\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        240
+      ],
+      "id": "18332a14-16ec-4cfd-8a8e-32bb98c3d820",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un classificatore di spese.\n\nDevi scegliere SOLO UNA categoria dalla lista.\n\nCATEGORIE VALIDE:\n- Ristorazione (cibo già pronto consumato fuori: pizza, kebab, ristorante, bar)\n- Alimentari (cibo comprato al supermercato o ingredienti: pasta, latte, pane, supermercato)\n- Trasporti\n- Shopping\n- Casa\n- Salute\n- Svago\n- Altro\n\nREGOLE IMPORTANTI:\n- Rispondi con UNA SOLA categoria\n- NON inventare categorie\n- NON spiegare nulla\n- Se incerto → Altro\n\nESEMPI:\npizza → Ristorazione\nkebab → Ristorazione\nristorante → Ristorazione\nsupermercato → Alimentari\nlatte → Alimentari\npasta → Alimentari\ntastiera → Shopping\nmouse → Shopping\n\nTESTO:\n{{ $json.description }}\n\nRISPOSTA:",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        -608
+      ],
+      "id": "1e090cb7-fb36-48fd-83e3-cd255871c1f0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -768
+      ],
+      "id": "6a244a0a-5eb5-45ff-9f81-6a5f31034927",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "ulqFOjga8rkA2FpB",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        -432
+      ],
+      "id": "6cf43433-de07-4c07-a45a-231a9e97a2db",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COALESCE(SUM(importo),0) AS totale\nFROM spese\nWHERE MONTH(data_spesa)=MONTH(NOW())\nAND YEAR(data_spesa)=YEAR(NOW());",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        16,
+        -256
+      ],
+      "id": "69d111dd-8cd8-4ec0-9d6c-d2d898628fe2",
+      "name": "Execute a SQL per totale",
+      "credentials": {
+        "mySql": {
+          "id": "k90uLl7BIXjETWKn",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.message.text;\n\nconst match = text.match(/^\\/ultime(?:\\s+(\\d+))?$/);\n\nreturn [{\n  numero: match?.[1] ? parseInt(match[1], 10) : 5\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -80
+      ],
+      "id": "9c7be2a9-5bdb-461f-8b56-b1b3db0adc4c",
+      "name": "Code estrai testo"
+    },
+    {
+      "parameters": {
+        "jsCode": "let testo = \"📝 Ultime \" + $('Code estrai testo').first().json.numero + \" spese\\n\\n\";\n\nfor (const item of items) {\n  testo += `💰 €${item.json.importo} - ${item.json.descrizione}\\n`;\n}\n\nreturn [\n  {\n    json: {\n      testo\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -80
+      ],
+      "id": "aad0746b-26cf-489b-a14a-6021f0c2adfc",
+      "name": "Code ultime spese"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.testo }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        -80
+      ],
+      "id": "353c1a89-4b37-47f2-8d65-e5b65e9edccc",
+      "name": "Send ultime spese",
+      "webhookId": "7f9c17ea-1555-4010-99f7-801f725655e2",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=📊 Totale del mese  💰 €{{$json.totale}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        -256
+      ],
+      "id": "8132421e-e33d-4791-8a2d-c57b7c3b1318",
+      "name": "Send totale",
+      "webhookId": "babe325a-8aeb-4da1-b377-40d1c129dd6b",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🤖 Gestione Spese\n\n/spesa importo descrizione (per aggiungere una spesa)\n/totale (per vedere il totale speso)\n/ultime numero (per vedere le ultime n spese fatte)\n/categorie (per vedere le spese per categoria)\n/categoria tipo di categoria (per vdere le spese inerenti a quella categoria)\n/help",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        80
+      ],
+      "id": "b84a0ce2-e2a0-4f15-bb4f-8d2e9b81d8cb",
+      "name": "Send help",
+      "webhookId": "3f0b3959-669a-4314-9718-a7794c22e3c0",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.testo }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        240
+      ],
+      "id": "9a51ad9e-4310-4a2f-a383-6adf89afb5b8",
+      "name": "Send categorie",
+      "webhookId": "5e3a9518-870d-4978-9a82-a166860357b8",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const valid = [\n  \"Ristorazione\",\n  \"Trasporti\",\n  \"Alimentari\",\n  \"Shopping\",\n  \"Casa\",\n  \"Salute\",\n  \"Svago\",\n  \"Altro\"\n];\n\nlet cat = ($json.output || \"\").trim();\n\n// fallback di sicurezza\nif (!valid.includes(cat)) {\n  cat = \"Altro\";\n}\n\nreturn [{\n  json: {\n    categoria: cat\n  }\n}];;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -608
+      ],
+      "id": "058acd71-7df3-42f8-beba-a7535302983e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $('Telegram Trigger').first().json.message.text;\n\nconst match = text.match(/^\\/categoria\\s+(.+)$/i);\n\nif (!match) {\n\tthrow new Error(\"Usa: /categoria nome\");\n}\n\nreturn [{\n\tjson: {\n\t\tcategoria: match[1].trim()\n\t}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        400
+      ],
+      "id": "ab44a820-e5af-4490-8f3d-4b13716789a4",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  importo,\n  descrizione,\n  data_spesa\nFROM spese\nWHERE categoria = '{{ $json.categoria }}'\nORDER BY data_spesa DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        400
+      ],
+      "id": "f31663b5-861b-42d3-9d9d-ae8c5107b78d",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "k90uLl7BIXjETWKn",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "if (items.length === 0) {\n\treturn [{\n\t\tjson: {\n\t\t\ttext: \"Nessuna spesa trovata per questa categoria.\"\n\t\t}\n\t}];\n}\n\nlet text = `📂 Spese categoria: ` + $('Code in JavaScript1').first().json.categoria + `\\n\\n`;\n\nfor (const item of items) {\n\ttext += `💰 €${item.json.importo} - ${item.json.descrizione}\\n`;\n\ttext += `📅 ${item.json.data_spesa}\\n\\n`;\n}\n\nreturn [{ json: { text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        400
+      ],
+      "id": "25dfd45d-6c93-4b1c-8c8a-4d3eedc7c18a",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Benvenuto nel bot Telegram per tener traccia delle tue spese💰\n\nDi seguito troverai i vari comandi disponibili per le diverse funzioni🤖:\n\n/spesa + importo + descrizione (per aggiungere una spesa)🛒\nes: /spesa 15 pizza\n\n/totale (per vedere il totale speso)💸\n\n/ultime + numero (per vedere le ultime n spese fatte)⌚\nes: /ultime 3 \n\n/categorie (per vedere le spese per categoria)🏷️\n\n/categoria + tipo di categoria (per vedere le spese inerenti a quella categoria)🔖\nes: /categoria ristorazione\n\n/help🆘",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        544
+      ],
+      "id": "b6dfa96c-c6ea-45f5-a32c-af3bd55c6f43",
+      "name": "Send start",
+      "webhookId": "2ac95078-0da6-432a-9658-f48c17e07d8e",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        400
+      ],
+      "id": "b82793c3-a7b5-4279-b13f-0f002e92e134",
+      "name": "Send spese per categoria",
+      "webhookId": "89efc2a2-5293-47e5-9fd4-0eba82ece752",
+      "credentials": {
+        "telegramApi": {
+          "id": "m05CEcvyC3wAdihi",
+          "name": "BotSpese"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code Estrai testo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL per totale",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code estrai testo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Estrai testo": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Code ultime spese",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send categorie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL per totale": {
+      "main": [
+        [
+          {
+            "node": "Send totale",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code estrai testo": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code ultime spese": {
+      "main": [
+        [
+          {
+            "node": "Send ultime spese",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send spese per categoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6eba5be4-0492-42a2-9d1c-bc123c6e21ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ee687de73a5ef6e8357f64fd043074a3b4dc0d8461daa4a404cc7d946c33ee3"
+  },
+  "id": "9L3TIYFMvHzHyD3O",
+  "tags": []
+}
