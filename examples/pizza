@@ -1,8 +1,0 @@
-Messaggio Telegram → Pizza 12 euro ieri sera
-
-Output fa parte di AI
-{
-  "categoria": "Ristorazione",
-  "importo": 12,
-  "descrizione": "pizza"
-}
