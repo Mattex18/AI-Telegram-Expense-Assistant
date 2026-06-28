@@ -1,0 +1,7 @@
+Comandi disponibili:
+
+/spesa 15 pizza → aggiunge 15 alla spesa nella categoria ristorazione
+/totale → totale spese
+/ultime5 → ultime 5 spese
+/categoria → spese per categoria
+/help → per aiuto
