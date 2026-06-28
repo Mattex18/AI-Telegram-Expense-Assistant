@@ -1,0 +1,10 @@
+Telegram message → /spesa 30 pizza
+
+Output IA
+"{
+  "categoria": "Ristorazione",
+  "importo": 30,
+  "descrizione": "pizza"
+}"
+
+Lo aggiunge in automatico alla spesa totale e alla categoria
